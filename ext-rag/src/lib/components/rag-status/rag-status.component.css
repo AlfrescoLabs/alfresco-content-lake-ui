@@ -54,6 +54,11 @@
   letter-spacing: 0.04em;
 }
 
+/* A product name renders as it is written, so it is exempt from the uppercasing the other labels get. */
+.rag-status__tile-label--brand {
+  text-transform: none;
+}
+
 .rag-status__tile-value {
   font-size: 28px;
   font-weight: 700;
