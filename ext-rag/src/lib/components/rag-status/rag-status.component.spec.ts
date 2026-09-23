@@ -42,6 +42,34 @@ describe('RagStatusComponent', () => {
     expect(component.isUp('DOWN')).toBeFalse();
   });
 
+  /**
+   * The platform tile's label, asserted against the rendered DOM in the host workspace.
+   *
+   * This could not be checked until the bundle compiled here at all, which is what #22 blocked. The full phrase
+   * is what a trademark is registered for, so the bare word must not appear on its own anywhere in the rendered
+   * output.
+   */
+  it('labelsThePlatformTileWithTheFullProductNameAndNeverTheBareWord', () => {
+    ragApiSpy.getStatus.and.returnValue(of(status));
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    const rendered: string = fixture.nativeElement.textContent;
+    expect(rendered).toContain('Hyland OpenArch');
+    // No occurrence of "OpenArch" that is not preceded by "Hyland ".
+    expect(rendered.replace(/Hyland OpenArch/g, '')).not.toContain('OpenArch');
+  });
+
+  /** `hxprStatus` is the wire field name and stays bound; only the label moved. */
+  it('stillBindsTheHxprStatusFieldItAlwaysDid', () => {
+    ragApiSpy.getStatus.and.returnValue(of(status));
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('UP');
+    expect(component.status?.hxprStatus).toBe('UP');
+  });
+
   it('labelsEachSourceRatherThanShowingTheRawKey', () => {
     ragApiSpy.getStatus.and.returnValue(of({
       ...status,
