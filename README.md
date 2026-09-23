@@ -58,6 +58,20 @@ Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo
 cp -r /path/to/alfresco-content-lake-ui/ext-rag projects/ext-rag
 ```
 
+On ACA 7.3.0, also install `marked`:
+
+```bash
+npm install marked@^15
+```
+
+ACA 7.3.0 depends on `ngx-markdown@19.1.1`, which declares `marked: ^15.0.0` as a **required** peer, and ACA's
+lockfile does not include it. Without it `ngx-markdown`'s own bundle cannot resolve `marked`, so *every* build
+and spec that touches markdown fails -- including ACA's own AI results view, not just this extension. The
+symptom is `Module not found: Error: Can't resolve 'marked' in .../ngx-markdown/fesm2022`, and because Karma
+compiles a library as one unit it surfaces as the whole bundle failing to load rather than as one file's error.
+
+Check `npm ls marked` before concluding anything is wrong with the extension.
+
 ### 2. Register the module
 
 Edit `app/src/app/extensions.module.ts`:
