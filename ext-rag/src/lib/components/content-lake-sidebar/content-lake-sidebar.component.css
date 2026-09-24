@@ -125,6 +125,11 @@
   color: #c62828;
 }
 
+.ext-rag-content-lake__ingestion-status--skipped {
+  background: rgba(158, 158, 158, 0.12);
+  color: #616161;
+}
+
 .ext-rag-content-lake__error {
   margin: 0;
   padding: 8px 12px;
@@ -170,6 +175,10 @@
   background: #c62828;
 }
 
+.ext-rag-content-lake__summary-bar-skipped {
+  background: #9e9e9e;
+}
+
 .ext-rag-content-lake__summary-counts {
   display: flex;
   flex-wrap: wrap;
@@ -199,4 +208,8 @@
 
 .ext-rag-content-lake__summary-count--failed {
   color: #c62828;
+}
+
+.ext-rag-content-lake__summary-count--skipped {
+  color: #9e9e9e;
 }

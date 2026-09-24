@@ -81,6 +81,24 @@ describe('ContentLakeStatusBadgeComponent', () => {
     expect(component.statusTooltip).toBe('Content Lake status: Error (parse error)');
   });
 
+  it('fileSkipped_readsAsSkippedNotError', () => {
+    batchServiceSpy.getNodeStatus.and.returnValue(of(status({
+      nodeId: 'file-2',
+      inScope: true,
+      status: 'SKIPPED',
+      error: 'Content not read, because its extension .p7s cannot contain text'
+    })));
+    component.data = { node: { id: 'file-2', isFolder: false, isFile: true } as any };
+    component.ngOnChanges();
+
+    // A skip is not a failure: it must not render the error icon or read as an error.
+    expect(component.statusIcon).toBe('do_not_disturb_on');
+    expect(component.statusClass).toBe('ext-rag-status-badge--skipped');
+    expect(component.statusTooltip).toBe(
+      'Content Lake status: Skipped (Content not read, because its extension .p7s cannot contain text)'
+    );
+  });
+
   it('fileOutOfScope_hidesBadge', () => {
     batchServiceSpy.getNodeStatus.and.returnValue(of(status({ nodeId: 'file-2', inScope: false })));
     component.data = { node: { id: 'file-2', isFolder: false, isFile: true } as any };

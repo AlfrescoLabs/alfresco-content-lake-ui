@@ -82,7 +82,8 @@
       <div class="ext-rag-content-lake__ingestion-status" [ngClass]="{
         'ext-rag-content-lake__ingestion-status--pending': syncStatus === 'PENDING',
         'ext-rag-content-lake__ingestion-status--indexed': syncStatus === 'INDEXED',
-        'ext-rag-content-lake__ingestion-status--failed': syncStatus === 'FAILED'
+        'ext-rag-content-lake__ingestion-status--failed': syncStatus === 'FAILED',
+        'ext-rag-content-lake__ingestion-status--skipped': syncStatus === 'SKIPPED'
       }">
         <mat-icon *ngIf="!statusLoading">{{ statusIcon }}</mat-icon>
         <mat-spinner *ngIf="statusLoading" diameter="18"></mat-spinner>
@@ -106,6 +107,9 @@
           <div class="ext-rag-content-lake__summary-bar-failed"
                [style.width.%]="folderSummary.totalDocuments ? (folderSummary.failedDocuments / folderSummary.totalDocuments * 100) : 0">
           </div>
+          <div class="ext-rag-content-lake__summary-bar-skipped"
+               [style.width.%]="folderSummary.totalDocuments ? (folderSummary.skippedDocuments / folderSummary.totalDocuments * 100) : 0">
+          </div>
         </div>
 
         <div class="ext-rag-content-lake__summary-counts">
@@ -117,6 +121,9 @@
           </span>
           <span class="ext-rag-content-lake__summary-count ext-rag-content-lake__summary-count--failed" *ngIf="folderSummary.failedDocuments > 0">
             <mat-icon>error</mat-icon> {{ folderSummary.failedDocuments }} failed
+          </span>
+          <span class="ext-rag-content-lake__summary-count ext-rag-content-lake__summary-count--skipped" *ngIf="folderSummary.skippedDocuments > 0">
+            <mat-icon>do_not_disturb_on</mat-icon> {{ folderSummary.skippedDocuments }} skipped
           </span>
         </div>
       </div>

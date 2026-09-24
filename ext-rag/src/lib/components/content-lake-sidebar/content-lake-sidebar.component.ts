@@ -198,6 +198,8 @@ export class ContentLakeSidebarComponent {
         return 'Indexed';
       case 'FAILED':
         return 'Not indexed (error)';
+      case 'SKIPPED':
+        return 'Skipped (cannot contain text)';
       default:
         return this.isFolder ? 'Not applicable' : 'Pending';
     }
@@ -214,6 +216,8 @@ export class ContentLakeSidebarComponent {
         return 'check_circle';
       case 'FAILED':
         return 'error';
+      case 'SKIPPED':
+        return 'do_not_disturb_on';
       default:
         return 'help_outline';
     }

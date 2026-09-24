@@ -78,6 +78,8 @@ export class ContentLakeStatusBadgeComponent implements OnChanges, OnDestroy {
         return 'check_circle';
       case 'FAILED':
         return 'error';
+      case 'SKIPPED':
+        return 'do_not_disturb_on';
       case 'NOT_APPLICABLE':
         return 'remove_circle_outline';
       default:
@@ -104,6 +106,8 @@ export class ContentLakeStatusBadgeComponent implements OnChanges, OnDestroy {
         return 'ext-rag-status-badge--indexed';
       case 'FAILED':
         return 'ext-rag-status-badge--failed';
+      case 'SKIPPED':
+        return 'ext-rag-status-badge--skipped';
       default:
         return 'ext-rag-status-badge--default';
     }
@@ -128,6 +132,10 @@ export class ContentLakeStatusBadgeComponent implements OnChanges, OnDestroy {
         return 'Content Lake status: Indexed';
       case 'FAILED':
         return this.statusError?.trim() ? `Content Lake status: Error (${this.statusError})` : 'Content Lake status: Error';
+      // Nothing was attempted, because the type cannot contain text. Distinct from Error, which means a
+      // pass ran and produced nothing, and the reason is worth showing because it names the extension.
+      case 'SKIPPED':
+        return this.statusError?.trim() ? `Content Lake status: Skipped (${this.statusError})` : 'Content Lake status: Skipped';
       case 'NOT_APPLICABLE':
         return 'Content Lake status: Not applicable';
       default:

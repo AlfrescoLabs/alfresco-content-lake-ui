@@ -253,13 +253,14 @@ export interface MergedDocument {
 /*  Content Lake node status  –  batch-ingester API                   */
 /* ------------------------------------------------------------------ */
 
-export type ContentLakeSyncStatus = 'PENDING' | 'INDEXED' | 'FAILED';
+export type ContentLakeSyncStatus = 'PENDING' | 'INDEXED' | 'FAILED' | 'SKIPPED';
 
 export interface ContentLakeFolderStatusSummary {
   totalDocuments: number;
   indexedDocuments: number;
   pendingDocuments: number;
   failedDocuments: number;
+  skippedDocuments: number;
 }
 
 export interface ContentLakeNodeStatus {

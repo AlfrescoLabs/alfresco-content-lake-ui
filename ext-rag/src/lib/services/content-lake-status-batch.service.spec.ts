@@ -173,7 +173,8 @@ describe('ContentLakeStatusBatchService', () => {
         totalDocuments: 3,
         indexedDocuments: 3,
         pendingDocuments: 0,
-        failedDocuments: 0
+        failedDocuments: 0,
+        skippedDocuments: 0
       }
     };
     httpSpy.post.and.returnValue(of({ 'folder-1': folderStatus }));
