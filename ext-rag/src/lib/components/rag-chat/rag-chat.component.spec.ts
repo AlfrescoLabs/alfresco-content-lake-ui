@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ElementRef } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { DiscoveryApiService } from '@alfresco/adf-content-services';
-import { of } from 'rxjs';
+import { AuthenticationService } from '@alfresco/adf-core';
+import { Subject, of } from 'rxjs';
 
 import { RagChatComponent } from './rag-chat.component';
 import { RagApiService } from '../../services/rag-api.service';
@@ -13,6 +14,8 @@ describe('RagChatComponent', () => {
   let fixture: ComponentFixture<RagChatComponent>;
   let component: RagChatComponent;
   let ragApiSpy: jasmine.SpyObj<RagApiService>;
+  let currentUser: string | null;
+  let onLogout: Subject<any>;
 
   const promptResponse: RagPromptResponse = {
     answer: 'answer',
@@ -29,6 +32,8 @@ describe('RagChatComponent', () => {
 
   beforeEach(async () => {
     sessionStorage.clear();
+    currentUser = 'alice';
+    onLogout = new Subject<any>();
     ragApiSpy = jasmine.createSpyObj<RagApiService>(
       'RagApiService', ['prompt', 'streamPrompt', 'getSessionSummary', 'getStatus']);
     ragApiSpy.prompt.and.returnValue(of(promptResponse));
@@ -50,6 +55,14 @@ describe('RagChatComponent', () => {
       providers: [
         RagChatSessionService,
         provideRouter([]),
+        {
+          provide: AuthenticationService,
+          useValue: {
+            onLogout,
+            isLoggedIn: () => currentUser !== null,
+            getUsername: () => currentUser
+          }
+        },
         {
           provide: RagApiService,
           useValue: ragApiSpy
@@ -92,6 +105,24 @@ describe('RagChatComponent', () => {
     expect(summaries.length).toBe(1);
     expect(summaries[0].sessionId).toBe('session-from-backend');
     expect(component.activeSessionId).toBe('session-from-backend');
+  });
+
+  it('logout_clearsMessagesAndAbortsInflightAnswer', () => {
+    const sessions = TestBed.inject(RagChatSessionService);
+    const stream = new Subject<RagPromptStreamEvent>();
+    ragApiSpy.streamPrompt.and.returnValue(stream.asObservable());
+    component.currentQuestion = 'Secret question';
+    component.ask();
+
+    currentUser = null;
+    onLogout.next(true);
+    currentUser = 'bob';
+    stream.next({ type: 'token', token: 'late token' } as RagPromptStreamEvent);
+
+    expect(stream.observed).toBeFalse();
+    expect(component.messages).toEqual([]);
+    expect(component.thinking).toBeFalse();
+    expect(sessions.listSessions()).toEqual([]);
   });
 
   it('interruptedLoadingMessage_isHealedOnReopen', () => {

@@ -4,8 +4,11 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
-  OnInit
+  OnInit,
+  DestroyRef,
+  inject
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -112,6 +115,7 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
   private inflightMessage?: ChatMessage;
   private lastTokenPersistMs = 0;
   private static readonly TOKEN_PERSIST_INTERVAL_MS = 400;
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private ragApi: RagApiService,
@@ -123,6 +127,12 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
 
   ngOnInit(): void {
     this.initializeConversationState();
+
+    // A conversation belongs to the user who had it. When the store is discarded on logout or a
+    // user change, drop the in-flight answer before it can be written into the next user's store.
+    this.chatSessions.cleared$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.resetForNewUser());
 
     // #16: the filter's options come from the index, so a CMIS or connector source is selectable.
     this.sources.options()
@@ -369,6 +379,19 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
     } catch (_) {
       // ignore
     }
+  }
+
+  private resetForNewUser(): void {
+    this.requestSubscription?.unsubscribe();
+    this.requestSubscription = undefined;
+    this.inflightMessage = undefined;
+    this.streamRawContent.clear();
+    this.thinking = false;
+    this.activeSessionId = null;
+    this.messages = [];
+    this.sessionSummaries = [];
+    this.currentQuestion = '';
+    this.conversationSummary = null;
   }
 
   private initializeConversationState(): void {

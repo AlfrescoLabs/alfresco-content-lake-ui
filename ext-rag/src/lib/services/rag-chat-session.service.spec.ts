@@ -1,8 +1,14 @@
+import { Subject } from 'rxjs';
+import { AuthenticationService } from '@alfresco/adf-core';
+
 import { RagChatSessionService } from './rag-chat-session.service';
 import { ChatMessage } from '../models/rag.models';
 
 describe('RagChatSessionService', () => {
   let service: RagChatSessionService;
+  let currentUser: string | null;
+  let onLogout: Subject<any>;
+  let auth: AuthenticationService;
 
   const userTurn = (content: string): ChatMessage => ({
     id: `u-${content}`, role: 'user', content, timestamp: new Date()
@@ -10,7 +16,14 @@ describe('RagChatSessionService', () => {
 
   beforeEach(() => {
     sessionStorage.clear();
-    service = new RagChatSessionService();
+    currentUser = 'alice';
+    onLogout = new Subject<any>();
+    auth = {
+      onLogout,
+      isLoggedIn: () => currentUser !== null,
+      getUsername: () => currentUser
+    } as unknown as AuthenticationService;
+    service = new RagChatSessionService(auth);
   });
 
   afterEach(() => sessionStorage.clear());
@@ -36,7 +49,7 @@ describe('RagChatSessionService', () => {
     const id = service.createSession();
     service.saveMessages(id, [userTurn('Remembered?')]);
 
-    const reloaded = new RagChatSessionService();
+    const reloaded = new RagChatSessionService(auth);
     expect(reloaded.getMessages(id).length).toBe(1);
   });
 
@@ -86,5 +99,56 @@ describe('RagChatSessionService', () => {
     const ids = service.listSessions().map((s) => s.sessionId);
     expect(ids).not.toContain(second);
     expect(ids).toContain(first);
+  });
+
+  describe('user isolation', () => {
+    const storedKeys = (): string[] =>
+      Array.from({ length: sessionStorage.length }, (_, i) => sessionStorage.key(i) as string)
+        .filter((key) => key.startsWith('ext-rag.chat.'));
+
+    it('wipes memory and storage on logout', () => {
+      const id = service.createSession();
+      service.saveMessages(id, [userTurn('alice secret')]);
+      let cleared = 0;
+      service.cleared$.subscribe(() => cleared++);
+
+      onLogout.next(true);
+      currentUser = 'bob';
+
+      expect(cleared).toBe(1);
+      expect(storedKeys()).toEqual([]);
+      expect(service.listSessions()).toEqual([]);
+      expect(service.getMessages(id)).toEqual([]);
+    });
+
+    it('never shows one user the sessions of another, even without a logout event', () => {
+      const id = service.createSession();
+      service.saveMessages(id, [userTurn('alice secret')]);
+
+      currentUser = 'bob';
+
+      expect(service.listSessions()).toEqual([]);
+      expect(service.getMessages(id)).toEqual([]);
+      expect(new RagChatSessionService(auth).listSessions()).toEqual([]);
+      expect(storedKeys()).toEqual([]);
+    });
+
+    it('does not persist anything while nobody is signed in', () => {
+      currentUser = null;
+      const id = service.createSession();
+      service.saveMessages(id, [userTurn('anonymous')]);
+
+      expect(storedKeys()).toEqual([]);
+      currentUser = 'bob';
+      expect(service.listSessions()).toEqual([]);
+    });
+
+    it('drops the unowned legacy store', () => {
+      sessionStorage.setItem('ext-rag.chat.sessions.v1', JSON.stringify({ activeSessionId: 'x', sessions: [] }));
+
+      new RagChatSessionService(auth);
+
+      expect(storedKeys()).toEqual([]);
+    });
   });
 });
