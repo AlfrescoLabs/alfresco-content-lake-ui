@@ -6,12 +6,13 @@
 [![Nx](https://img.shields.io/badge/Nx-21.5.2-143055.svg)](https://nx.dev/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/)
 [![Status](https://img.shields.io/badge/Status-PoC-yellow.svg)]()
+[![Built on Hyland OpenArch](https://img.shields.io/badge/Built%20on-Hyland%20OpenArch-0b5394.svg)](https://github.com/Hyland/OpenArch)
 
 UI extension for [content-lake-app](https://github.com/AlfrescoLabs/content-lake-app) that adds **semantic search** and **RAG question-answering** to Alfresco Content Application (ACA) and Alfresco Digital Workspace (ADW).
 
 ## Content Lake Ecosystem
 
-Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo content into [hxpr](https://github.com/HylandSoftware/hxpr) for hybrid semantic search and RAG.
+Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo content into [Hyland OpenArch](https://github.com/Hyland/OpenArch) (hxpr) for hybrid semantic search and RAG.
 
 | Repo | Role |
 |---|---|
