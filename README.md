@@ -7,7 +7,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/)
 [![Status](https://img.shields.io/badge/Status-PoC-yellow.svg)]()
 
-UI extension for [content-lake-app](https://github.com/aborroy/content-lake-app) that adds **semantic search** and **RAG question-answering** to Alfresco Content Application (ACA) and Alfresco Digital Workspace (ADW).
+UI extension for [content-lake-app](https://github.com/AlfrescoLabs/content-lake-app) that adds **semantic search** and **RAG question-answering** to Alfresco Content Application (ACA) and Alfresco Digital Workspace (ADW).
 
 ## Content Lake Ecosystem
 
@@ -15,10 +15,10 @@ Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo
 
 | Repo | Role |
 |---|---|
-| [content-lake-app](https://github.com/aborroy/content-lake-app) | Java ingestion pipeline and RAG service |
-| [content-lake-app-deployment](https://github.com/aborroy/content-lake-app-deployment) | Docker Compose stack that wires everything together |
-| **[alfresco-content-lake-ui](https://github.com/aborroy/alfresco-content-lake-ui)** | ACA/ADW extension: semantic search + RAG chat sidebar (this repo) |
-| [content-lake-app-ui](https://github.com/aborroy/content-lake-app-ui) | Standalone demo UI (Alfresco + Nuxeo dual auth) |
+| [content-lake-app](https://github.com/AlfrescoLabs/content-lake-app) | Java ingestion pipeline and RAG service |
+| [content-lake-app-deployment](https://github.com/AlfrescoLabs/content-lake-app-deployment) | Docker Compose stack that wires everything together |
+| **[alfresco-content-lake-ui](https://github.com/AlfrescoLabs/alfresco-content-lake-ui)** | ACA/ADW extension: semantic search + RAG chat sidebar (this repo) |
+| [content-lake-app-ui](https://github.com/AlfrescoLabs/content-lake-app-ui) | Standalone demo UI (Alfresco + Nuxeo dual auth) |
 | [nuxeo-deployment](https://github.com/aborroy/nuxeo-deployment) | Local Nuxeo + PostgreSQL stack (required for Nuxeo profiles) |
 
 ## Features
@@ -44,7 +44,7 @@ Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo
 
 ## Prerequisites
 
-* A running [content-lake-app](https://github.com/aborroy/content-lake-app) deployment with `rag-service` available
+* A running [content-lake-app](https://github.com/AlfrescoLabs/content-lake-app) deployment with `rag-service` available
 * The `content-lake-repo-model` module deployed in Alfresco Repository so `cl:indexed` and `cl:excludeFromLake` exist
 * ACA (Alfresco Content App) source checkout, or ADW (Alfresco Digital Workspace) source
 * Node.js 24 (what `docker/Dockerfile` builds with, and what ACA 7.4.x requires)
@@ -286,7 +286,7 @@ the ticket is the username and the password is empty, and services reject the ba
 
 ## API contract
 
-The extension expects the following endpoints from [content-lake-app](https://github.com/aborroy/content-lake-app) `rag-service`:
+The extension expects the following endpoints from [content-lake-app](https://github.com/AlfrescoLabs/content-lake-app) `rag-service`:
 
 ### `POST /api/rag/search/semantic`
 

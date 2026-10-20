@@ -2,7 +2,7 @@
 
 ADF extension module that adds **semantic search** and **RAG question-answering** to Alfresco Content Application (ACA) and Alfresco Digital Workspace (ADW).
 
-This module is part of [alfresco-content-lake-ui](https://github.com/aborroy/alfresco-content-lake-ui) and implements [content-lake-app#7](https://github.com/aborroy/content-lake-app/issues/7).
+This module is part of [alfresco-content-lake-ui](https://github.com/AlfrescoLabs/alfresco-content-lake-ui) and implements [content-lake-app#7](https://github.com/AlfrescoLabs/content-lake-app/issues/7).
 
 ## Installation
 
