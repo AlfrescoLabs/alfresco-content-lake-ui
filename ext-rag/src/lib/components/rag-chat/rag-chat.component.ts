@@ -34,7 +34,7 @@ import {
 import { RagDeleteSessionDialogComponent } from './rag-delete-session-dialog.component';
 import { ragChatMarkedOptions } from './rag-chat-marked-options';
 import { ChatMessage, MergedDocument, PromptSource, RagPromptOptions, RagPromptResponse } from '../../models/rag.models';
-import { resolveSourceType, sourceTypeLabel } from '../../utils/source-label.util';
+import { openInSourceLabel, resolveSourceType, sourceTypeLabel } from '../../utils/source-label.util';
 import { combineFilters, escapeHxqlLiteral, sourceIdClause } from '../../utils/hxql.util';
 
 /** Drops the undefined halves of a scope so the request body carries only what was decided. */
@@ -314,7 +314,7 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
   }
 
   openSourceLabel(doc: MergedDocument): string {
-    return `Open in ${this.sourceSystemLabel(doc)}`;
+    return `Open in ${openInSourceLabel(doc, this.currentAlfrescoSourceId())}`;
   }
 
   openLinkHint(doc: MergedDocument): string {
@@ -340,9 +340,17 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
     return doc.sourceId ?? 'Unknown source';
   }
 
-  /** Scoping to an ACA node pins the filter to Alfresco, whatever the control last held. */
+  /**
+   * Scoping to an ACA node pins the filter to this repository, whatever the control last held. The
+   * repository has its own option only when the index holds more than one Alfresco source; otherwise
+   * the Alfresco type option stands for it.
+   */
   displaySourceKey(): string {
-    return this.scopedNodeId ? 'alfresco' : this.sourceKey;
+    if (!this.scopedNodeId) {
+      return this.sourceKey;
+    }
+    const ownSourceId = this.currentAlfrescoSourceId();
+    return ownSourceId && this.sources.find(this.sourceOptions, ownSourceId) ? ownSourceId : 'alfresco';
   }
 
   setSourceKey(value: string | null | undefined): void {
@@ -458,7 +466,7 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
     sessionId: string,
     isFirstTurn: boolean,
     assistantMsg: ChatMessage,
-    scopeOptions: Pick<RagPromptOptions, 'nodeId' | 'filter' | 'sourceType'>
+    scopeOptions: Pick<RagPromptOptions, 'nodeId' | 'nodeSourceId' | 'filter' | 'sourceType'>
   ): void {
     this.inflightMessage = assistantMsg;
     this.lastTokenPersistMs = 0;
@@ -528,7 +536,7 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
     sessionId: string,
     isFirstTurn: boolean,
     assistantMsg: ChatMessage,
-    scopeOptions: Pick<RagPromptOptions, 'nodeId' | 'filter' | 'sourceType'>
+    scopeOptions: Pick<RagPromptOptions, 'nodeId' | 'nodeSourceId' | 'filter' | 'sourceType'>
   ): void {
     this.inflightMessage = assistantMsg;
     this.requestSubscription = this.ragApi.prompt(question, {
@@ -647,7 +655,7 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
       || message.includes('stream request failed (405)');
   }
 
-  private buildScopeOptions(): Pick<RagPromptOptions, 'nodeId' | 'filter' | 'sourceType'> {
+  private buildScopeOptions(): Pick<RagPromptOptions, 'nodeId' | 'nodeSourceId' | 'filter' | 'sourceType'> {
     const selected = this.selectedSourceScope();
     const nodeId = this.scopedNodeId?.trim();
     if (!nodeId) {
@@ -655,7 +663,14 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
     }
 
     if (!this.scopedNodeIsFolder) {
-      return { nodeId, ...scopeOptions(selected) };
+      // The source id goes as `nodeSourceId`, not in `filter`: the service ANDs it with the `cin_id`
+      // clause itself, and passing both would repeat the clause.
+      const nodeSourceId = this.currentAlfrescoSourceId();
+      return {
+        nodeId,
+        ...(nodeSourceId ? { nodeSourceId } : {}),
+        ...scopeOptions({ sourceType: selected.sourceType })
+      };
     }
 
     const pathPrefix = this.scopedNodePath?.trim();
@@ -665,13 +680,8 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
 
     // Left unparenthesised: combineFilters wraps each side, so pre-wrapping would double it up.
     const escapedPrefix = escapeHxqlLiteral(pathPrefix);
-    let filter: string | undefined =
+    const filter =
       `cin_ingestProperties.source_path >= '${escapedPrefix}' AND cin_ingestProperties.source_path < '${escapedPrefix}\uFFFF'`;
-
-    const currentSourceId = this.currentAlfrescoSourceId();
-    if (currentSourceId) {
-      filter = combineFilters(sourceIdClause(currentSourceId), filter);
-    }
 
     return scopeOptions({ sourceType: selected.sourceType, filter: combineFilters(selected.filter, filter) });
   }
@@ -679,13 +689,18 @@ export class RagChatComponent implements AfterViewChecked, OnInit {
   /**
    * The source scope for the next question.
    *
-   * Scoping to an ACA node forces Alfresco, because the node came from this repository. Otherwise the
-   * selected option decides, and an id-level option scopes through the filter rather than through
-   * `sourceType`, since the prompt request carries no source id (#16).
+   * Scoping to an ACA node forces this repository, because the node came from it: Alfresco by type,
+   * and by `cin_sourceId` once the repository id is known, so another Alfresco source in the index is
+   * left out. Otherwise the selected option decides, and an id-level option scopes through the filter
+   * rather than through `sourceType`, since the prompt request carries no source id (#16).
    */
   private selectedSourceScope(): SourceScope {
     if (this.scopedNodeId) {
-      return { sourceType: 'alfresco' };
+      const ownSourceId = this.currentAlfrescoSourceId();
+      return {
+        sourceType: 'alfresco',
+        ...(ownSourceId ? { filter: sourceIdClause(ownSourceId) } : {})
+      };
     }
     return this.sources.scope(this.sources.find(this.sourceOptions, this.sourceKey));
   }

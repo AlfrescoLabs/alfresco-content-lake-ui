@@ -150,10 +150,69 @@ describe('RagChatComponent', () => {
       'What is this?',
       jasmine.objectContaining({
         nodeId: 'node-123',
+        nodeSourceId: 'alfresco:repo-main',
+        sourceType: 'alfresco',
         sessionId: jasmine.any(String),
         resetSession: true
       })
     );
+    // The service builds the source clause next to `cin_id`; repeating it in `filter` would double it.
+    expect(ragApiSpy.streamPrompt.calls.mostRecent().args[1]).not.toEqual(
+      jasmine.objectContaining({ filter: jasmine.anything() }));
+  });
+
+  it('sessionScope_fallsBackToTheAlfrescoTypeWhileTheRepositoryIsUnknown', () => {
+    component.currentRepositoryId = null;
+    component.scopedNodeId = 'node-123';
+    component.currentQuestion = 'What is this?';
+
+    component.ask();
+
+    const options = ragApiSpy.streamPrompt.calls.mostRecent().args[1] as Record<string, unknown>;
+    expect(options['nodeId']).toBe('node-123');
+    expect(options['sourceType']).toBe('alfresco');
+    expect(options['nodeSourceId']).toBeUndefined();
+    expect(options['filter']).toBeUndefined();
+  });
+
+  it('displaySourceKey_showsTheTypeWithOneAlfrescoSource', () => {
+    component.sourceOptions = [
+      { key: 'alfresco', level: 'type', sourceType: 'alfresco', label: 'Alfresco',
+        sourceKeys: ['alfresco:repo-main'], count: 3 }
+    ];
+    component.scopedNodeId = 'node-123';
+
+    expect(component.displaySourceKey()).toBe('alfresco');
+  });
+
+  it('displaySourceKey_showsThisRepositoryWhenTheIndexHoldsTwoAlfrescoSources', () => {
+    component.sourceOptions = [
+      { key: 'alfresco', level: 'type', sourceType: 'alfresco', label: 'Alfresco',
+        sourceKeys: ['alfresco:repo-main', 'alfresco:repo-other'], count: 5 },
+      { key: 'alfresco:repo-main', level: 'id', sourceType: 'alfresco', sourceId: 'repo-main',
+        label: 'Alfresco (repo-main)', sourceKeys: ['alfresco:repo-main'], count: 3 },
+      { key: 'alfresco:repo-other', level: 'id', sourceType: 'alfresco', sourceId: 'repo-other',
+        label: 'Alfresco (repo-other)', sourceKeys: ['alfresco:repo-other'], count: 2 }
+    ];
+    component.scopedNodeId = 'node-123';
+
+    expect(component.displaySourceKey()).toBe('alfresco:repo-main');
+  });
+
+  it('openSourceLabel_namesTheRepositoryOfAnotherAlfrescoSource', () => {
+    const doc = {
+      nodeId: 'node-123',
+      sourceId: 'alfresco:repo-other',
+      sourceType: 'alfresco',
+      name: 'Budget.xlsx',
+      path: '/Company Home',
+      score: 0.9,
+      chunks: [],
+      openInSourceUrl: 'http://other/share/page/document-details?nodeRef=workspace://SpacesStore/node-123'
+    };
+
+    expect(component.canOpenInRepository(doc)).toBeFalse();
+    expect(component.openLinkHint(doc)).toBe('Open in Alfresco (repo-other)');
   });
 
   it('folderScope_buildsPathPrefixFilter', () => {

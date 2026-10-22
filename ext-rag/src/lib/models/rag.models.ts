@@ -133,6 +133,11 @@ export interface RagPromptRequest {
  */
 export interface RagPromptOptions {
   nodeId?: string;
+  /**
+   * The `cin_sourceId` of the repository `nodeId` belongs to (`alfresco:<repositoryId>`). ANDed with the
+   * `cin_id` clause, because node ids are only unique within one repository.
+   */
+  nodeSourceId?: string;
   sessionId?: string;
   resetSession?: boolean;
   topK?: number;

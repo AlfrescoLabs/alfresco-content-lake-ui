@@ -1,4 +1,4 @@
-import { sourceKeyLabel, sourceTypeLabel, splitSourceKey } from './source-label.util';
+import { openInSourceLabel, sourceKeyLabel, sourceTypeLabel, splitSourceKey } from './source-label.util';
 
 describe('source-label.util', () => {
 
@@ -38,5 +38,14 @@ describe('source-label.util', () => {
     expect(sourceKeyLabel('cmis:docmgr')).toBe('CMIS (docmgr)');
     expect(sourceKeyLabel('cmis:archive')).toBe('CMIS (archive)');
     expect(sourceKeyLabel('nuxeo')).toBe('Nuxeo');
+  });
+
+  it('namesTheRepositoryOnlyForAnotherSourceOfTheOwnType', () => {
+    const own = 'alfresco:repo-main';
+    expect(openInSourceLabel({ sourceType: 'alfresco', sourceId: 'alfresco:repo-other' }, own))
+      .toBe('Alfresco (repo-other)');
+    expect(openInSourceLabel({ sourceType: 'alfresco', sourceId: own }, own)).toBe('Alfresco');
+    expect(openInSourceLabel({ sourceType: 'nuxeo', sourceId: 'nuxeo:nuxeo-demo' }, own)).toBe('Nuxeo');
+    expect(openInSourceLabel({ sourceType: 'alfresco', sourceId: 'alfresco:repo-other' }, null)).toBe('Alfresco');
   });
 });

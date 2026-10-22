@@ -19,6 +19,7 @@ import {
   StructuredAnswer
 } from '../models/rag.models';
 import { findEcmTicket } from '../utils/ecm-ticket.util';
+import { sourceIdClause } from '../utils/hxql.util';
 
 /** Everything about a search beyond the query and the two long-standing numeric knobs. */
 export interface SearchOptions {
@@ -168,7 +169,8 @@ export class RagApiService {
    * Backward compatibility:
    * - `prompt(question, nodeId)` is still accepted.
    * - `nodeId` is translated to an HXQL filter (`cin_id = '<nodeId>'`)
-   *   because the backend request now scopes via `filter`.
+   *   because the backend request now scopes via `filter`. With `nodeSourceId`
+   *   the filter also pins `cin_sourceId`.
    */
   prompt(question: string, nodeId?: string): Observable<RagPromptResponse>;
   prompt(question: string, options?: RagPromptOptions): Observable<RagPromptResponse>;
@@ -273,7 +275,7 @@ export class RagApiService {
       ? { nodeId: nodeIdOrOptions }
       : (nodeIdOrOptions ?? {});
 
-    const scopeFilter = this.nodeScopeFilter(options.nodeId);
+    const scopeFilter = this.nodeScopeFilter(options.nodeId, options.nodeSourceId);
     const filter = this.combineFilters(options.filter, scopeFilter);
 
     return {
@@ -292,12 +294,21 @@ export class RagApiService {
     };
   }
 
-  private nodeScopeFilter(nodeId?: string): string | undefined {
+  /**
+   * The filter for one node. A node id is unique only within its repository, and two Alfresco
+   * repositories can hold the same id (one restored from the other's backup), so the source id is
+   * ANDed in when the caller knows it.
+   */
+  private nodeScopeFilter(nodeId?: string, nodeSourceId?: string): string | undefined {
     const normalizedNodeId = nodeId?.trim();
     if (!normalizedNodeId) {
       return undefined;
     }
-    return `cin_id = '${this.escapeHxql(normalizedNodeId)}'`;
+    const nodeClause = `cin_id = '${this.escapeHxql(normalizedNodeId)}'`;
+    const normalizedSourceId = nodeSourceId?.trim();
+    return normalizedSourceId
+      ? this.combineFilters(sourceIdClause(normalizedSourceId), nodeClause)
+      : nodeClause;
   }
 
   private combineFilters(filterA?: string, filterB?: string): string | undefined {

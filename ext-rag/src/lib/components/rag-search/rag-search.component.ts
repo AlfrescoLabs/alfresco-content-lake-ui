@@ -18,7 +18,7 @@ import {
   ContentSourceOption
 } from '../../services/content-source-catalog.service';
 import { SearchResultItem, MergedDocument, FacetBucket, FacetsResponse } from '../../models/rag.models';
-import { resolveSourceType, sourceKeyLabel, sourceTypeLabel } from '../../utils/source-label.util';
+import { openInSourceLabel, resolveSourceType, sourceKeyLabel, sourceTypeLabel } from '../../utils/source-label.util';
 import { combineFilters, escapeHxqlLiteral } from '../../utils/hxql.util';
 
 interface FacetGroup {
@@ -285,7 +285,7 @@ export class RagSearchComponent implements OnInit {
   }
 
   openSourceLabel(doc: MergedDocument): string {
-    return `Open in ${this.sourceSystemLabel(doc)}`;
+    return `Open in ${openInSourceLabel(doc, this.currentAlfrescoSourceId())}`;
   }
 
   openLinkHint(doc: MergedDocument): string {

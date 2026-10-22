@@ -148,6 +148,38 @@ describe('RagApiService', () => {
     );
   });
 
+  it('prompt_pinsTheNodeScopeToItsSourceId', () => {
+    service.prompt('Summarize this file', {
+      nodeId: 'node-123',
+      nodeSourceId: 'alfresco:repo-main',
+      sourceType: 'alfresco'
+    }).subscribe();
+
+    expect(httpSpy.post).toHaveBeenCalledWith(
+      '/api/rag/prompt',
+      jasmine.objectContaining({
+        filter: "(cin_sourceId = 'alfresco:repo-main') AND (cin_id = 'node-123')",
+        sourceType: 'alfresco'
+      })
+    );
+  });
+
+  it('prompt_andsTheCallerFilterWithTheSourcePinnedNodeScope', () => {
+    service.prompt('q', {
+      nodeId: 'node-123',
+      nodeSourceId: 'alfresco:repo-main',
+      filter: "cin_ingestProperties.source_mimeType = 'application/pdf'"
+    }).subscribe();
+
+    expect(httpSpy.post).toHaveBeenCalledWith(
+      '/api/rag/prompt',
+      jasmine.objectContaining({
+        filter: "(cin_ingestProperties.source_mimeType = 'application/pdf') AND "
+          + "((cin_sourceId = 'alfresco:repo-main') AND (cin_id = 'node-123'))"
+      })
+    );
+  });
+
   it('streamPrompt_emitsTokensInOrder', (done) => {
     (globalThis as any).fetch = jasmine.createSpy('fetch').and.returnValue(Promise.resolve(
       createMockResponse([

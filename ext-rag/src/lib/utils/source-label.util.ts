@@ -49,6 +49,23 @@ export function sourceKeyLabel(key?: string): string {
   return sourceId ? `${label} (${sourceId})` : label;
 }
 
+/**
+ * Label for the system a hit opens in. A hit from another source of the same type as the UI's own
+ * (another Alfresco repository, seen from ACA) is named by its key, so the link does not read as if it
+ * opened in the repository the user is in. Every other hit is named by its type alone.
+ */
+export function openInSourceLabel(
+  doc: { sourceType?: string; sourceId?: string },
+  ownSourceKey?: string | null
+): string {
+  const key = doc?.sourceId;
+  if (key && ownSourceKey && key !== ownSourceKey
+      && splitSourceKey(key).sourceType === splitSourceKey(ownSourceKey).sourceType) {
+    return sourceKeyLabel(key);
+  }
+  return sourceTypeLabel(doc?.sourceType);
+}
+
 function normalizeType(value?: string): string {
   return (value ?? '').trim().toLowerCase();
 }
