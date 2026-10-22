@@ -52,17 +52,16 @@ describe('ContentSourceCatalogService', () => {
     expect(options.map((o) => o.count)).toEqual([120, 40, 12, 3]);
   });
 
-  it('alwaysOffersAlfrescoAndNuxeoEvenWithNothingIndexed', () => {
-    // A fresh index has no documents, and inside ACA the Alfresco option is expected regardless.
+  it('offersNoTypeTheIndexHoldsNoSourceOf', () => {
+    // Nuxeo is not offered without a Nuxeo source, and neither is Alfresco.
     const options = optionsFor({ 'cmis:docmgr': 5 });
 
-    expect(options.map((o) => o.key)).toEqual(['alfresco', 'nuxeo', 'cmis']);
-    expect(options.find((o) => o.key === 'alfresco')?.count).toBe(0);
+    expect(options.map((o) => o.key)).toEqual(['cmis']);
   });
 
   it('fallsBackToTheTwoKnownSourcesWhenStatusFails', () => {
     // sourceCounts is empty whenever hxpr is down, and the request can fail outright. Neither may empty
-    // the filter: it has to stay at least as usable as the three hardcoded options it replaced.
+    // the filter: it has to stay at least as usable as the hardcoded options it replaced.
     ragApi.getStatus.and.returnValue(throwError(() => new Error('hxpr down')));
     service = TestBed.inject(ContentSourceCatalogService);
 
@@ -72,23 +71,27 @@ describe('ContentSourceCatalogService', () => {
     expect(options.map((o) => o.key)).toEqual(['alfresco', 'nuxeo']);
   });
 
-  it('addsAnOptionPerSourceIdOnlyWhenATypeHasSeveral', () => {
+  it('namesEachOfTwoAlfrescoSourcesAndAddsNoRedundantTypeOption', () => {
+    // "All Alfresco" would repeat "All sources" when Alfresco is the only type.
+    const options = optionsFor({ 'alfresco:55d96fae-4d3a': 4, 'alfresco:5ce58fd0-91b2': 9 });
+
+    expect(options.map((o) => o.key)).toEqual(['alfresco:5ce58fd0-91b2', 'alfresco:55d96fae-4d3a']);
+    expect(options.map((o) => o.label)).toEqual(['Alfresco (5ce5)', 'Alfresco (55d9)']);
+  });
+
+  it('addsATypeOptionForSeveralSourcesOfATypeOnlyBesideAnotherType', () => {
     const options = optionsFor({
       'cmis:docmgr': 12,
       'cmis:archive': 30,
       'nuxeo:prod': 40
     });
 
-    // Two CMIS repositories are both "CMIS", so the id is what distinguishes them. A type with one
-    // repository gains no extra option, because there would be nothing to distinguish.
-    expect(options.map((o) => o.key))
-      .toEqual(['alfresco', 'nuxeo', 'cmis', 'cmis:archive', 'cmis:docmgr']);
-    expect(options.filter((o) => o.level === 'id').map((o) => o.label))
-      .toEqual(['CMIS (archive)', 'CMIS (docmgr)']);
+    expect(options.map((o) => o.key)).toEqual(['nuxeo', 'cmis', 'cmis:archive', 'cmis:docmgr']);
+    expect(options.map((o) => o.label)).toEqual(['Nuxeo', 'All CMIS', 'CMIS (arch)', 'CMIS (docm)']);
   });
 
   it('scopesATypeOptionThroughSourceTypeAndAnIdOptionThroughTheFilter', () => {
-    const options = optionsFor({ 'cmis:docmgr': 1, 'cmis:archive': 1 });
+    const options = optionsFor({ 'cmis:docmgr': 1, 'cmis:archive': 1, 'nuxeo:prod': 1 });
 
     // A type is scoped by naming its sources, not through the sourceType request field: that field
     // filters on the source_type ingest property, which only the Alfresco and Nuxeo adapters populate,
@@ -114,16 +117,13 @@ describe('ContentSourceCatalogService', () => {
   });
 
   it('fallsBackToSourceTypeOnlyForATypeTheIndexReportedNothingFor', () => {
-    // Alfresco and Nuxeo are offered before anything is ingested into them, so they alone can have no
-    // known source ids. Both adapters do populate source_type, so the request field works for them.
-    const options = optionsFor({ 'cmis:docmgr': 1 });
+    // Alfresco and Nuxeo are offered with nothing indexed, so they alone can have no known source ids.
+    // Both adapters do populate source_type, so the request field works for them.
+    const options = optionsFor({});
 
     const alfresco = service.find(options, 'alfresco')!;
     expect(alfresco.sourceKeys).toEqual([]);
     expect(service.scope(alfresco)).toEqual({ sourceType: 'alfresco', filter: undefined });
-
-    const cmis = service.find(options, 'cmis')!;
-    expect(service.scope(cmis)).toEqual({ filter: "cin_sourceId = 'cmis:docmgr'" });
   });
 
   it('treatsNoSelectionAsEverySourceAndKeepsTheCallersFilter', () => {

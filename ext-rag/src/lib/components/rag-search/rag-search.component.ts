@@ -183,7 +183,9 @@ export class RagSearchComponent implements OnInit {
     }
     // cin_sourceId buckets are `<sourceType>:<sourceId>`, which is not a label.
     if (property === 'cin_sourceId') {
-      return sourceKeyLabel(value);
+      // The other buckets are the sources this value has to be told apart from.
+      const group = this.facetGroups.find((g) => g.property === property);
+      return sourceKeyLabel(value, group?.buckets.map((bucket) => bucket.value) ?? []);
     }
     return value;
   }

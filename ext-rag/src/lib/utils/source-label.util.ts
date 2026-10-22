@@ -36,22 +36,43 @@ export function splitSourceKey(key: string): { sourceType: string; sourceId: str
   return { sourceType: normalizeType(key.slice(0, idx)), sourceId: key.slice(idx + 1) };
 }
 
+/** Docker-style short ids start this long and grow only until they are unique within the type. */
+const SHORT_ID_MIN = 4;
+
 /**
- * Label for one `<sourceType>:<sourceId>` key. The id is what distinguishes two sources of the same
- * type, so it is shown when there is one: two CMIS repositories are both "CMIS".
+ * Label for one `<sourceType>:<sourceId>` key among the `keys` known beside it. The type label alone when
+ * the type has one source; else the type label and a short id, the first four characters of the id
+ * extended only until no other source of the type shares them: two CMIS repositories read
+ * "CMIS (docm)" and "CMIS (arch)".
  */
-export function sourceKeyLabel(key?: string): string {
+export function sourceKeyLabel(key?: string, keys: readonly string[] = []): string {
   if (!key) {
     return 'source system';
   }
   const { sourceType, sourceId } = splitSourceKey(key);
   const label = sourceTypeLabel(sourceType);
-  return sourceId ? `${label} (${sourceId})` : label;
+  const ids = new Set([key, ...keys]
+    .map((other) => splitSourceKey(other))
+    .filter((other) => other.sourceType === sourceType && other.sourceId)
+    .map((other) => other.sourceId));
+  return sourceId && ids.size > 1 ? `${label} (${shortSourceId(sourceId, [...ids])})` : label;
+}
+
+/** The shortest prefix of `id`, at least four characters, that no other id in `ids` starts with. */
+export function shortSourceId(id: string, ids: readonly string[]): string {
+  const others = ids.filter((other) => other !== id);
+  for (let length = SHORT_ID_MIN; length < id.length; length++) {
+    const prefix = id.slice(0, length);
+    if (!others.some((other) => other.startsWith(prefix))) {
+      return prefix;
+    }
+  }
+  return id;
 }
 
 /**
  * Label for the system a hit opens in. A hit from another source of the same type as the UI's own
- * (another Alfresco repository, seen from ACA) is named by its key, so the link does not read as if it
+ * (another Alfresco repository, seen from ACA) is named by a short id, so the link does not read as if it
  * opened in the repository the user is in. Every other hit is named by its type alone.
  */
 export function openInSourceLabel(
@@ -61,7 +82,7 @@ export function openInSourceLabel(
   const key = doc?.sourceId;
   if (key && ownSourceKey && key !== ownSourceKey
       && splitSourceKey(key).sourceType === splitSourceKey(ownSourceKey).sourceType) {
-    return sourceKeyLabel(key);
+    return sourceKeyLabel(key, [ownSourceKey]);
   }
   return sourceTypeLabel(doc?.sourceType);
 }

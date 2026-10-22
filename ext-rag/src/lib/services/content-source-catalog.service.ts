@@ -15,7 +15,7 @@ export interface ContentSourceOption {
   label: string;
   /**
    * The `cin_sourceId` values this option covers: every source of the type for a type-level option, and
-   * the one source for an id-level option. Empty only for a type the index reported nothing for.
+   * the one source for an id-level option. Empty only for the fallback types, when the index reported nothing.
    */
   sourceKeys: string[];
   /** Documents this option covers, as reported by `/api/status`. */
@@ -39,13 +39,14 @@ export interface SourceScope {
  * - it covers the whole index rather than what the caller may read, which is fine for an option list;
  * - `StatusController` populates it only while hxpr is UP, so a hxpr blip returns it empty.
  *
- * Hence {@link FALLBACK_TYPES}: Alfresco and Nuxeo are always offered, so an empty or failed status
- * response leaves the filter no worse than the two hardcoded options it replaced.
+ * A type is offered only when the index holds a source of it. {@link FALLBACK_TYPES} is used only when
+ * the status response is empty or failed, so the filter is then no worse than the two hardcoded options
+ * it replaced.
  */
 @Injectable({ providedIn: 'root' })
 export class ContentSourceCatalogService {
 
-  /** Always offered, because a fresh index has no documents and these two are the expected sources. */
+  /** Offered only when the index reports no source at all, and drawn first in any list. */
   static readonly FALLBACK_TYPES: readonly string[] = ['alfresco', 'nuxeo'];
 
   /** The "every source" option's value. */
@@ -56,7 +57,8 @@ export class ContentSourceCatalogService {
   private cached?: Observable<ContentSourceOption[]>;
 
   /**
-   * The options to offer, one per source type, plus one per source id where a type has several.
+   * The options to offer: one per source, plus one per type that has several sources while another type
+   * exists too. A type with a single source is one type-level option.
    *
    * Cached for the lifetime of the app: `sourceCounts` changes only when a new source is ingested into,
    * and the search page, the chat page and the status page all read it.
@@ -125,39 +127,47 @@ export class ContentSourceCatalogService {
       idsByType.set(sourceType, ids);
     }
 
-    for (const type of ContentSourceCatalogService.FALLBACK_TYPES) {
-      if (!idsByType.has(type)) {
+    if (idsByType.size === 0) {
+      for (const type of ContentSourceCatalogService.FALLBACK_TYPES) {
         idsByType.set(type, []);
       }
     }
 
     const options: ContentSourceOption[] = [];
     const types = [...idsByType.keys()].sort(byFallbackFirstThenName);
+    const keys = Object.keys(sourceCounts ?? {});
 
     for (const sourceType of types) {
       const ids = idsByType.get(sourceType) ?? [];
-      options.push({
+      const typeOption: ContentSourceOption = {
         key: sourceType,
         level: 'type',
         sourceType,
         label: sourceTypeLabel(sourceType),
         sourceKeys: ids.map((id) => id.key),
         count: ids.reduce((total, id) => total + id.count, 0)
-      });
+      };
 
-      // Only worth distinguishing when the type has more than one repository behind it.
-      if (ids.length > 1) {
-        for (const id of [...ids].sort((a, b) => b.count - a.count)) {
-          options.push({
-            key: id.key,
-            level: 'id',
-            sourceType,
-            sourceId: id.sourceId,
-            label: sourceKeyLabel(id.key),
-            sourceKeys: [id.key],
-            count: id.count
-          });
-        }
+      // One repository is the whole type, so it stays a type-level option.
+      if (ids.length <= 1) {
+        options.push(typeOption);
+        continue;
+      }
+
+      // "All Alfresco" next to "All sources" would offer the same thing twice.
+      if (types.length > 1) {
+        options.push({ ...typeOption, label: `All ${typeOption.label}` });
+      }
+      for (const id of [...ids].sort((a, b) => b.count - a.count)) {
+        options.push({
+          key: id.key,
+          level: 'id',
+          sourceType,
+          sourceId: id.sourceId,
+          label: sourceKeyLabel(id.key, keys),
+          sourceKeys: [id.key],
+          count: id.count
+        });
       }
     }
 

@@ -1,4 +1,4 @@
-import { openInSourceLabel, sourceKeyLabel, sourceTypeLabel, splitSourceKey } from './source-label.util';
+import { openInSourceLabel, shortSourceId, sourceKeyLabel, sourceTypeLabel, splitSourceKey } from './source-label.util';
 
 describe('source-label.util', () => {
 
@@ -34,16 +34,25 @@ describe('source-label.util', () => {
     expect(splitSourceKey('filesystem')).toEqual({ sourceType: 'filesystem', sourceId: '' });
   });
 
-  it('namesASourceByItsIdSoTwoOfATypeAreDistinguishable', () => {
-    expect(sourceKeyLabel('cmis:docmgr')).toBe('CMIS (docmgr)');
-    expect(sourceKeyLabel('cmis:archive')).toBe('CMIS (archive)');
+  it('namesASourceByAShortIdOnlyWhenItsTypeHasSeveral', () => {
+    const keys = ['cmis:docmgr', 'cmis:archive', 'nuxeo:prod'];
+    expect(sourceKeyLabel('cmis:docmgr', keys)).toBe('CMIS (docm)');
+    expect(sourceKeyLabel('cmis:archive', keys)).toBe('CMIS (arch)');
+    expect(sourceKeyLabel('nuxeo:prod', keys)).toBe('Nuxeo');
+    expect(sourceKeyLabel('cmis:docmgr')).toBe('CMIS');
     expect(sourceKeyLabel('nuxeo')).toBe('Nuxeo');
+  });
+
+  it('startsAShortIdAtFourCharactersAndExtendsItOnlyOnAClash', () => {
+    expect(shortSourceId('55d96fae', ['55d96fae', '5ce58fd0'])).toBe('55d9');
+    expect(shortSourceId('55d96fae', ['55d96fae', '55d9b0c1'])).toBe('55d96');
+    expect(shortSourceId('ab', ['ab', 'cd'])).toBe('ab');
   });
 
   it('namesTheRepositoryOnlyForAnotherSourceOfTheOwnType', () => {
     const own = 'alfresco:repo-main';
     expect(openInSourceLabel({ sourceType: 'alfresco', sourceId: 'alfresco:repo-other' }, own))
-      .toBe('Alfresco (repo-other)');
+      .toBe('Alfresco (repo-o)');
     expect(openInSourceLabel({ sourceType: 'alfresco', sourceId: own }, own)).toBe('Alfresco');
     expect(openInSourceLabel({ sourceType: 'nuxeo', sourceId: 'nuxeo:nuxeo-demo' }, own)).toBe('Nuxeo');
     expect(openInSourceLabel({ sourceType: 'alfresco', sourceId: 'alfresco:repo-other' }, null)).toBe('Alfresco');
