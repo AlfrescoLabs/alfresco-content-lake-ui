@@ -48,7 +48,7 @@ describe('ContentLakeStatusBadgeComponent', () => {
     expect(component.visible).toBeTrue();
     expect(component.statusIcon).toBe('check_circle');
     expect(component.statusClass).toBe('ext-rag-status-badge--in-scope');
-    expect(component.statusTooltip).toBe('Content Lake: In scope');
+    expect(component.statusTooltip).toBe('App for OpenArch: In scope');
   });
 
   it('folderExcluded_showsExcludedIndicator', () => {
@@ -58,7 +58,7 @@ describe('ContentLakeStatusBadgeComponent', () => {
 
     expect(component.visible).toBeTrue();
     expect(component.statusIcon).toBe('block');
-    expect(component.statusTooltip).toBe('Content Lake: Excluded');
+    expect(component.statusTooltip).toBe('App for OpenArch: Excluded');
   });
 
   it('folderOutOfScope_hidesBadge', () => {
@@ -78,7 +78,7 @@ describe('ContentLakeStatusBadgeComponent', () => {
     expect(batchServiceSpy.getNodeStatus).toHaveBeenCalledWith('file-1');
     expect(component.visible).toBeTrue();
     expect(component.statusIcon).toBe('error');
-    expect(component.statusTooltip).toBe('Content Lake status: Error (parse error)');
+    expect(component.statusTooltip).toBe('App for OpenArch status: Error (parse error)');
   });
 
   it('fileSkipped_readsAsSkippedNotError', () => {
@@ -95,7 +95,7 @@ describe('ContentLakeStatusBadgeComponent', () => {
     expect(component.statusIcon).toBe('do_not_disturb_on');
     expect(component.statusClass).toBe('ext-rag-status-badge--skipped');
     expect(component.statusTooltip).toBe(
-      'Content Lake status: Skipped (Content not read, because its extension .p7s cannot contain text)'
+      'App for OpenArch status: Skipped (Content not read, because its extension .p7s cannot contain text)'
     );
   });
 

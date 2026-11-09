@@ -135,24 +135,24 @@ export class ContentLakeSidebarComponent {
 
     if (node.isFolder) {
       if (isExcludedFromLake(node)) {
-        return 'This folder subtree is excluded from Content Lake.';
+        return 'This folder subtree is excluded from App for OpenArch.';
       }
       if (hasIndexedAspect(node)) {
-        return 'This folder is a Content Lake scope root.';
+        return 'This folder is an App for OpenArch scope root.';
       }
       if (indexedAncestor) {
         return `Included via "${indexedAncestor.name}".`;
       }
-      return 'This folder is outside Content Lake scope.';
+      return 'This folder is outside App for OpenArch scope.';
     }
 
     if (isExcludedFromLake(node)) {
-      return 'This document is excluded from Content Lake.';
+      return 'This document is excluded from App for OpenArch.';
     }
     if (this.contentLakeEnabled && indexedAncestor) {
       return `Included via "${indexedAncestor.name}".`;
     }
-    return 'This document is outside Content Lake scope.';
+    return 'This document is outside App for OpenArch scope.';
   }
 
   get folderToggleEnabled(): boolean {

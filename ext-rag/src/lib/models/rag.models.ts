@@ -255,7 +255,7 @@ export interface MergedDocument {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Content Lake node status  –  batch-ingester API                   */
+/*  App for OpenArch node status  –  batch-ingester API                   */
 /* ------------------------------------------------------------------ */
 
 export type ContentLakeSyncStatus = 'PENDING' | 'INDEXED' | 'FAILED' | 'SKIPPED';

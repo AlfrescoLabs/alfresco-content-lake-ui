@@ -43,7 +43,7 @@ server {
         proxy_hide_header WWW-Authenticate;
     }
 
-    # Proxy Content Lake node-status requests (batch-ingester)
+    # Proxy App for OpenArch node-status requests (batch-ingester)
     location /api/content-lake/ {
         proxy_pass ${APP_CONFIG_CONTENT_LAKE_URL}/api/content-lake/;
         proxy_set_header Host $host;

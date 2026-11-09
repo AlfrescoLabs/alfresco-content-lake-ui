@@ -43,7 +43,7 @@ ext-rag/
     │   │   ├── rag-search/                # Semantic search + facets component
     │   │   ├── rag-sidebar/               # Sidebar wrapper (compact chat)
     │   │   ├── rag-status/                # Operational status dashboard (/rag-status)
-    │   │   ├── content-lake-sidebar/      # Content Lake scope sidebar
+    │   │   ├── content-lake-sidebar/      # App for OpenArch scope sidebar
     │   │   └── content-lake-status-badge/ # Per-node ingestion status badge
     │   ├── models/
     │   │   └── rag.models.ts              # TypeScript interfaces (API + view models)
@@ -52,7 +52,7 @@ ext-rag/
     │   │   ├── rag-auth.interceptor.ts    # Attaches the Alfresco ticket to /api/rag, /api/content-lake, /api/status
     │   │   ├── rag-chat-session.service.ts        # Chat session state
     │   │   ├── content-source-catalog.service.ts  # The set of indexed sources, from /api/status
-    │   │   ├── content-lake-scope.service.ts      # Active Content Lake scope
+    │   │   ├── content-lake-scope.service.ts      # Active App for OpenArch scope
     │   │   └── content-lake-status-batch.service.ts # Batched node status lookups
     │   ├── utils/
     │   │   ├── content-lake-scope.utils.ts

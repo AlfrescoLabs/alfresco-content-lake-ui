@@ -24,7 +24,7 @@
       "path": "rag-status",
       "component": "ext-rag.status",
       "auth": ["content-services.auth"],
-      "data": { "title": "Content Lake Status" }
+      "data": { "title": "App for OpenArch Status" }
     }
   ],
 
@@ -44,7 +44,7 @@
           {
             "id": "ext-rag.nav.status",
             "icon": "monitor_heart",
-            "title": "Content Lake Status",
+            "title": "App for OpenArch Status",
             "description": "Ingestion and service status",
             "route": "rag-status",
             "order": 510
@@ -82,7 +82,7 @@
         "id": "ext-rag.context.enable-folder-scope",
         "order": 92,
         "icon": "offline_bolt",
-        "title": "Enable Content Lake for this folder",
+        "title": "Enable App for OpenArch for this folder",
         "actions": { "click": "ext-rag.scope.enable-folder" },
         "rules": { "visible": ["app.selection.folder", "app.selection.folder.canUpdate", "!ext-rag.selection.folder.indexed"] }
       },
@@ -90,7 +90,7 @@
         "id": "ext-rag.context.disable-folder-scope",
         "order": 93,
         "icon": "hide_source",
-        "title": "Disable Content Lake for this folder",
+        "title": "Disable App for OpenArch for this folder",
         "actions": { "click": "ext-rag.scope.disable-folder" },
         "rules": { "visible": ["app.selection.folder", "app.selection.folder.canUpdate", "ext-rag.selection.folder.indexed"] }
       },
@@ -141,7 +141,7 @@
         {
           "id": "ext-rag.content-lake-sidebar-tab",
           "order": 210,
-          "title": "Content Lake",
+          "title": "App for OpenArch",
           "icon": "offline_bolt",
           "component": "ext-rag.content-lake-sidebar"
         }
@@ -152,7 +152,7 @@
       {
         "id": "ext-rag.badge.content-lake-sync-status",
         "icon": "help_outline",
-        "tooltip": "Content Lake ingestion status",
+        "tooltip": "App for OpenArch ingestion status",
         "component": "ext-rag.content-lake-status-badge",
         "rules": {
           "visible": ["ext-rag.node.content-lake-aware"]

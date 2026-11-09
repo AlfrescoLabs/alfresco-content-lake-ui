@@ -50,7 +50,7 @@ export class RagAuthInterceptor implements HttpInterceptor {
 
     if (!ticket) return next.handle(req);
 
-    // Every Content Lake service reads the ticket the same way: as the username of a Basic header,
+    // Every App for OpenArch service reads the ticket the same way: as the username of a Basic header,
     // with an empty password. Sending the bare ticket to some of them and `ticket:` to others is how
     // the two encodings drifted apart in the first place, so there is deliberately no branch here.
     const encodedCredentials = btoa(ticket + ':');

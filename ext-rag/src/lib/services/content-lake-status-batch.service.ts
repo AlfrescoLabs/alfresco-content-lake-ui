@@ -17,7 +17,7 @@ import { ContentLakeNodeStatus } from '../models/rag.models';
  * in the batch call because the server-side aggregation is expensive for
  * large folders. Use {@link getNodeStatusDetailed} when you need the
  * {@link ContentLakeFolderStatusSummary} for a single selected folder
- * (e.g. the Content Lake sidebar).
+ * (e.g. the App for OpenArch sidebar).
  */
 @Injectable({ providedIn: 'root' })
 export class ContentLakeStatusBatchService {

@@ -1,4 +1,4 @@
-# Alfresco Content Lake UI
+# App for OpenArch: Alfresco UI extension
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![ADF](https://img.shields.io/badge/Alfresco%20ADF-8.4.0--21916318527-7C4DFF.svg)](https://github.com/Alfresco/alfresco-ng2-components)
@@ -8,11 +8,14 @@
 [![Status](https://img.shields.io/badge/Status-PoC-yellow.svg)]()
 [![Built on Hyland OpenArch](https://img.shields.io/badge/Built%20on-Hyland%20OpenArch-0b5394.svg)](https://github.com/Hyland/OpenArch)
 
-UI extension for [content-lake-app](https://github.com/AlfrescoLabs/content-lake-app) that adds **semantic search** and **RAG question-answering** to Alfresco Content Application (ACA) and Alfresco Digital Workspace (ADW).
+UI extension for [App for OpenArch](https://github.com/AlfrescoLabs/content-lake-app) that adds **semantic search** and **RAG question-answering** to Alfresco Content Application (ACA) and Alfresco Digital Workspace (ADW).
 
-## Content Lake Ecosystem
+> [!IMPORTANT]
+> **Not an official Hyland product.** App for OpenArch is not Hyland OpenArch. It is in the [AlfrescoLabs](https://github.com/AlfrescoLabs) organization on GitHub because Hyland does not officially support it. Hyland OpenArch itself is at [github.com/hyland/OpenArch](https://github.com/hyland/OpenArch).
 
-Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo content into [Hyland OpenArch](https://github.com/Hyland/OpenArch) (hxpr) for hybrid semantic search and RAG.
+## App for OpenArch projects
+
+Part of the **App for OpenArch** projects -- a PoC for ingesting Alfresco and Nuxeo content into [Hyland OpenArch](https://github.com/Hyland/OpenArch) (hxpr) for hybrid semantic search and RAG. Repository, module and configuration names use `content-lake`.
 
 | Repo | Role |
 |---|---|
@@ -29,7 +32,7 @@ Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo
 * Chat-style Q&A: natural language questions answered via RAG, displaying the generated answer, model used, timing breakdown, and referenced source documents with chunks
 * Answer options: per-question composer toggles to auto-detect metadata filters from the question (`inferFilters`) and to request a structured answer (summary, key points, citations)
 * Citation faithfulness: when backend verification is enabled (`rag.citation.verify.enabled`), each answer shows a grounded / unsupported badge and lists any unsupported claims
-* Operational status: a "Content Lake Status" view (nav entry + `rag-status` route) showing hxpr connectivity, indexed document counts per source, embedding-model reachability, and, when `connectorsUrl` is configured, the connectors an ingester has loaded together with anything that failed to load
+* Operational status: an "App for OpenArch Status" view (nav entry + `rag-status` route) showing hxpr connectivity, indexed document counts per source, embedding-model reachability, and, when `connectorsUrl` is configured, the connectors an ingester has loaded together with anything that failed to load
 * Mixed-source awareness: search results and citations show the originating source system, and open Nuxeo hits in Nuxeo Web UI via backend-provided deep links
 * Any-source filter: the source filter in search and chat is built from what the index actually holds, so a CMIS repository, a filesystem tree or any plugin connector is selectable without a change here. Two sources of the same type are offered separately and labelled by source id
 * Document budget: ask for a number of distinct documents rather than a number of chunks, and see how many documents answered
@@ -37,9 +40,9 @@ Part of the **Content Lake** ecosystem -- a PoC for ingesting Alfresco and Nuxeo
 * Folder-scoped mode: right-click any folder and choose *"Ask AI about this folder"* to scope retrieval to that folder subtree
 * Sidebar tab: compact chat panel in the info-drawer, automatically scoped to the selected document or folder.
 * Conversation sessions: local session list with restore and *New conversation* support across route changes
-* Content Lake scope controls: right-click a folder to add or remove the `cl:indexed` aspect, or use the dedicated *Content Lake* sidebar tab
-* Document override: set `cl:excludeFromLake` on a document from the *Content Lake* sidebar to opt it out of an indexed folder subtree
-* Visual scope indicators: badges show when a folder or document is in Content Lake scope, and when a document is explicitly excluded
+* App for OpenArch scope controls: right-click a folder to add or remove the `cl:indexed` aspect, or use the dedicated *App for OpenArch* sidebar tab
+* Document override: set `cl:excludeFromLake` on a document from the *App for OpenArch* sidebar to opt it out of an indexed folder subtree
+* Visual scope indicators: badges show when a folder or document is in App for OpenArch scope, and when a document is explicitly excluded
 * Document preview: result links open the ACA document viewer; closing the preview returns to the RAG Assistant page
 * Zero custom auth code: authentication is forwarded transparently via the ADF HTTP interceptor and a shared gateway
 
@@ -167,17 +170,17 @@ Use this flow to access all sidebar-driven features from the document list:
 2. Click the info drawer toggle (right-side panel icon in the top toolbar) to open the right panel.
 3. In the panel header, switch to:
    * *Ask AI* tab for compact document-scoped chat.
-   * *Content Lake* tab for scope and ingestion controls.
+   * *App for OpenArch* tab for scope and ingestion controls.
 
 What you can do from each tab:
 
 * *Ask AI* (document selected):
   * Ask questions about the selected document directly from the sidebar.
   * Keep context while browsing files without leaving the current page.
-* *Content Lake* (folder selected):
-  * Enable or disable Content Lake inclusion for the folder subtree.
-* *Content Lake* (document selected):
-  * Exclude or include the document from inherited Content Lake scope.
+* *App for OpenArch* (folder selected):
+  * Enable or disable App for OpenArch inclusion for the folder subtree.
+* *App for OpenArch* (document selected):
+  * Exclude or include the document from inherited App for OpenArch scope.
   * Check *Ingestion status* and refresh it using the refresh icon.
 
 Notes:
@@ -185,14 +188,14 @@ Notes:
 * Sidebar tabs appear only when the extension is correctly registered (`provideRagExtension`) and `ext-rag.plugin.json` is included in build assets.
 * *Ingestion status* requires `/api/content-lake/*` to be proxied to `batch-ingester` (see proxy/nginx sections below).
 
-## Content Lake scope controls
+## App for OpenArch scope controls
 
 The extension also exposes the repository scope model introduced by `content-lake-app`:
 
-* Right-click a folder and use *Enable Content Lake for this folder* or *Disable Content Lake for this folder* to add or remove `cl:indexed`
-* Open the *Content Lake* tab in the ACA info drawer to manage the same folder toggle without leaving the current view
-* Select a document inside an indexed subtree and use *Exclude this document from Content Lake* to set `cl:excludeFromLake=true`
-* Look for the `offline_bolt` badge on nodes that are currently in Content Lake scope, and the `block` badge on documents explicitly excluded from ingestion
+* Right-click a folder and use *Enable App for OpenArch for this folder* or *Disable App for OpenArch for this folder* to add or remove `cl:indexed`
+* Open the *App for OpenArch* tab in the ACA info drawer to manage the same folder toggle without leaving the current view
+* Select a document inside an indexed subtree and use *Exclude this document from App for OpenArch* to set `cl:excludeFromLake=true`
+* Look for the `offline_bolt` badge on nodes that are currently in App for OpenArch scope, and the `block` badge on documents explicitly excluded from ingestion
 
 These controls call the standard Alfresco Repository nodes API directly. No extra UI-specific backend service is required.
 
@@ -224,7 +227,7 @@ with the following runtime environment variables:
 |---|---|---|
 | `APP_CONFIG_ECM_HOST` | Alfresco base URL | `http://localhost:8080` |
 | `APP_CONFIG_RAG_URL` | rag-service base URL | `http://localhost:9091` |
-| `APP_CONFIG_CONTENT_LAKE_URL` | batch-ingester base URL (Content Lake node status) | `http://localhost:9090` |
+| `APP_CONFIG_CONTENT_LAKE_URL` | batch-ingester base URL (App for OpenArch node status) | `http://localhost:9090` |
 
 When the image runs behind the full deployment proxy, that proxy routes `/api/content-lake` and the
 chat stream directly, so these defaults are only used when the image serves those paths on its own.
@@ -250,7 +253,7 @@ This ensures:
 * Requests from the browser go to the same origin (no CORS issues)
 * The ADF HTTP interceptor attaches the Alfresco auth ticket automatically
 * `rag-service` receives the ticket and can validate it against the Alfresco authentication API
-* `batch-ingester` serves ingestion-status lookups used by the Content Lake sidebar
+* `batch-ingester` serves ingestion-status lookups used by the App for OpenArch sidebar
 
 ## Authentication flow
 
@@ -280,7 +283,7 @@ ticket from browser storage and sends it in the same format ADF uses for reposit
 `Authorization: Basic base64(ticket:)`. The gateway makes `rag-service` reachable on the same
 origin as Alfresco.
 
-That one encoding goes to every Content Lake path the interceptor covers, `/api/rag`,
+That one encoding goes to every App for OpenArch path the interceptor covers, `/api/rag`,
 `/api/content-lake` and `/api/status`, with no per-path variation. The trailing colon is required:
 the ticket is the username and the password is empty, and services reject the bare
 `base64(ticket)` form with 401.
@@ -426,7 +429,7 @@ Each is optional: a failure disables the feature it feeds rather than breaking s
 | `GET /api/rag/sessions/{sessionId}/summary` | The conversation-memory panel. 404 means there is no summary yet. Use the backend-assigned session id, not the client-side one |
 | `GET /api/status` | The status view, and the set of options in the source filters. Response `{hxprStatus, totalDocuments, sourceCounts, embeddingModel}`, where `sourceCounts` is keyed `<sourceType>:<sourceId>` |
 | `GET /api/connectors` | The status view's connector panel, when `connectorsUrl` is set. Response `{connectors[{sourceType, displayName, origin, implementation, settings}], problems[]}`. Published by an ingester, not by `rag-service` |
-| `POST /api/content-lake/nodes/status` | The scope badges and the Content Lake sidebar. Body `{nodeIds[], includeFolderAggregate?}` |
+| `POST /api/content-lake/nodes/status` | The scope badges and the App for OpenArch sidebar. Body `{nodeIds[], includeFolderAggregate?}` |
 
 ## Development
 

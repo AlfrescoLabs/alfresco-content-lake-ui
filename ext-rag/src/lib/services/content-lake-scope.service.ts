@@ -50,7 +50,7 @@ export class ContentLakeScopeService {
       }),
       tap(() =>
         this.notifications.showInfo(
-          indexed ? 'Content Lake enabled for folder subtree' : 'Content Lake disabled for folder subtree'
+          indexed ? 'App for OpenArch enabled for folder subtree' : 'App for OpenArch disabled for folder subtree'
         )
       )
     );
@@ -81,7 +81,7 @@ export class ContentLakeScopeService {
       tap(() =>
         this.notifications.showInfo(
           excluded
-            ? (isFolder ? 'Folder subtree excluded from Content Lake' : 'Document excluded from Content Lake')
+            ? (isFolder ? 'Folder subtree excluded from App for OpenArch' : 'Document excluded from App for OpenArch')
             : (isFolder ? 'Folder subtree restored to inherited scope' : 'Document restored to inherited scope')
         )
       )
@@ -143,10 +143,10 @@ export class ContentLakeScopeService {
       details.includes("cl:indexed isn't a valid qname") ||
       details.includes("cl:excludefromlake isn't a valid qname")
     ) {
-      return 'Content Lake model is not deployed in Alfresco. Install content-lake-repo-model and restart the repository.';
+      return 'App for OpenArch model is not deployed in Alfresco. Install content-lake-repo-model and restart the repository.';
     }
 
-    return 'Unable to update Content Lake scope';
+    return 'Unable to update App for OpenArch scope';
   }
 
   private extractErrorDetails(error: any): string {

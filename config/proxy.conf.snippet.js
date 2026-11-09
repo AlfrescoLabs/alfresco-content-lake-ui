@@ -19,7 +19,7 @@ module.exports = {
     logLevel: 'debug',
   },
 
-  // --- Content Lake status API ----------------------------------
+  // --- App for OpenArch status API ----------------------------------
   '/api/content-lake': {
     target: 'http://localhost:9090',
     changeOrigin: true,

@@ -15,7 +15,7 @@ type DocumentStatus = ContentLakeSyncStatus | 'NOT_APPLICABLE' | 'NOT_AVAILABLE'
 /**
  * Folder-specific scope indicator shown instead of aggregated ingestion
  * status (which is expensive). The full breakdown is available in the
- * Content Lake sidebar when the user selects the folder.
+ * App for OpenArch sidebar when the user selects the folder.
  */
 type FolderScope = 'IN_SCOPE' | 'EXCLUDED' | 'OUT_OF_SCOPE';
 
@@ -117,29 +117,29 @@ export class ContentLakeStatusBadgeComponent implements OnChanges, OnDestroy {
     if (this.isFolder) {
       switch (this.folderScope) {
         case 'IN_SCOPE':
-          return 'Content Lake: In scope';
+          return 'App for OpenArch: In scope';
         case 'EXCLUDED':
-          return 'Content Lake: Excluded';
+          return 'App for OpenArch: Excluded';
         default:
-          return 'Content Lake: Not in scope';
+          return 'App for OpenArch: Not in scope';
       }
     }
 
     switch (this.status) {
       case 'PENDING':
-        return 'Content Lake status: Pending';
+        return 'App for OpenArch status: Pending';
       case 'INDEXED':
-        return 'Content Lake status: Indexed';
+        return 'App for OpenArch status: Indexed';
       case 'FAILED':
-        return this.statusError?.trim() ? `Content Lake status: Error (${this.statusError})` : 'Content Lake status: Error';
+        return this.statusError?.trim() ? `App for OpenArch status: Error (${this.statusError})` : 'App for OpenArch status: Error';
       // Nothing was attempted, because the type cannot contain text. Distinct from Error, which means a
       // pass ran and produced nothing, and the reason is worth showing because it names the extension.
       case 'SKIPPED':
-        return this.statusError?.trim() ? `Content Lake status: Skipped (${this.statusError})` : 'Content Lake status: Skipped';
+        return this.statusError?.trim() ? `App for OpenArch status: Skipped (${this.statusError})` : 'App for OpenArch status: Skipped';
       case 'NOT_APPLICABLE':
-        return 'Content Lake status: Not applicable';
+        return 'App for OpenArch status: Not applicable';
       default:
-        return 'Content Lake status: Not available';
+        return 'App for OpenArch status: Not available';
     }
   }
 

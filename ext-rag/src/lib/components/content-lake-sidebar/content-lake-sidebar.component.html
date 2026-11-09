@@ -4,7 +4,7 @@
       <div class="ext-rag-content-lake__title-row">
         <mat-icon>{{ isFolder ? 'folder_special' : 'description' }}</mat-icon>
         <div>
-          <h3>Content Lake</h3>
+          <h3>App for OpenArch</h3>
           <p>{{ selectedNode?.name }}</p>
         </div>
       </div>
@@ -38,7 +38,7 @@
           [checked]="nodeExcluded"
           [disabled]="!folderExcludeToggleEnabled"
           (change)="onNodeExcludedChange($event)">
-          {{ nodeExcluded ? 'Restore this folder subtree to inherited Content Lake scope' : 'Exclude this folder subtree from Content Lake' }}
+          {{ nodeExcluded ? 'Restore this folder subtree to inherited App for OpenArch scope' : 'Exclude this folder subtree from App for OpenArch' }}
         </mat-slide-toggle>
         <p class="ext-rag-content-lake__hint">
           Sets <code>cl:excludeFromLake</code> on this folder to opt its subtree out of an indexed ancestor.
@@ -52,7 +52,7 @@
             [checked]="nodeExcluded"
             [disabled]="!documentExcludeToggleEnabled"
             (change)="onNodeExcludedChange($event)">
-            Exclude this document from Content Lake
+            Exclude this document from App for OpenArch
           </mat-slide-toggle>
           <p class="ext-rag-content-lake__hint">
             Sets <code>cl:excludeFromLake</code> on this document to opt it out of an indexed folder subtree.
@@ -139,13 +139,13 @@
 <ng-template #loadingState>
   <div class="ext-rag-content-lake__loading">
     <mat-spinner diameter="24"></mat-spinner>
-    <span>Loading Content Lake state…</span>
+    <span>Loading App for OpenArch state…</span>
   </div>
 </ng-template>
 
 <ng-template #emptyState>
   <div class="ext-rag-content-lake__empty">
     <mat-icon>ads_click</mat-icon>
-    <span>Select a folder or document to manage Content Lake scope.</span>
+    <span>Select a folder or document to manage App for OpenArch scope.</span>
   </div>
 </ng-template>

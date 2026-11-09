@@ -56,8 +56,8 @@ describe('RagStatusComponent', () => {
 
     const rendered: string = fixture.nativeElement.textContent;
     expect(rendered).toContain('Hyland OpenArch');
-    // No occurrence of "OpenArch" that is not preceded by "Hyland ".
-    expect(rendered.replace(/Hyland OpenArch/g, '')).not.toContain('OpenArch');
+    // "OpenArch" appears only in the full names "Hyland OpenArch" (the engine) and "App for OpenArch" (this app).
+    expect(rendered.replace(/Hyland OpenArch|App for OpenArch/g, '')).not.toContain('OpenArch');
   });
 
   /** `hxprStatus` is the wire field name and stays bound; only the label moved. */
