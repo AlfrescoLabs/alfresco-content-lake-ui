@@ -100,6 +100,12 @@ RUN sed -i 's/"maximumError": "5mb"/"maximumError": "6mb"/g' app/project.json
 
 # Install dependencies and build
 RUN npm ci
+# ext-rag imports ngx-markdown and marked in its chat view. ACA 7.x brings ngx-markdown, ACA 8 (Angular 20) does
+# not, so install the ngx-markdown of the host's Angular major when it is missing. marked is its peer.
+RUN if ! node -e "require.resolve('ngx-markdown')" 2>/dev/null; then \
+      angular=$(node -p "require('@angular/core/package.json').version.split('.')[0]") && \
+      npm install --no-save "ngx-markdown@^${angular}" "marked@^15"; \
+    fi
 RUN npx nx build content-ce --configuration=production
 
 # ----- Stage 2: Serve with nginx -----

@@ -76,6 +76,16 @@ compiles a library as one unit it surfaces as the whole bundle failing to load r
 
 Check `npm ls marked` before concluding anything is wrong with the extension.
 
+On ACA 8.0.0, install `ngx-markdown` too:
+
+```bash
+npm install ngx-markdown@^20 marked@^15
+```
+
+ACA 8.0.0 (Angular 20, ADF 9) no longer depends on `ngx-markdown`, but the chat view of the extension imports it
+and `marked`. Without them the build fails with `Cannot find module 'ngx-markdown'`. The Docker image installs
+them when the ACA it builds does not have them.
+
 ### 2. Register the module
 
 Edit `app/src/app/extensions.module.ts`:
