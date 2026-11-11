@@ -15,15 +15,35 @@
 #
 # Build arguments:
 #   ACA_TAG – Git tag or branch to build from (default: develop)
+#   ACA_BUILDER_IMAGE – Base image for the build stage (default: node:24-alpine)
+#   ACA_RUNTIME_IMAGE – Base image for the runtime stage (default: nginxinc/nginx-unprivileged:1.25-alpine)
 # ============================================================
+
+# Base images can be overridden, e.g. to use a private registry, a mirror
+# or hardened images.
+ARG ACA_BUILDER_IMAGE=node:24-alpine
+ARG ACA_RUNTIME_IMAGE=nginxinc/nginx-unprivileged:1.25-alpine
 
 # ----- Stage 1: Build -----
 # ACA 7.4.x moved to a Node 24 toolchain; older builders can fail during npm ci.
-FROM node:24-alpine AS builder
+FROM ${ACA_BUILDER_IMAGE} AS builder
 
 ARG ACA_TAG=develop
 
-RUN apk add --no-cache git
+# Build-only stage; needed to install git when the base image runs as non-root.
+USER root
+
+RUN set -eu; \
+    if command -v git >/dev/null 2>&1; then \
+        echo "git is already installed"; \
+    else \
+        . /etc/os-release; \
+        case " ${ID:-} ${ID_LIKE:-} " in \
+            *" alpine "*) apk add --no-cache git ;; \
+            *" debian "*) apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/* ;; \
+            *) echo "Unsupported OS for installing git: ${ID:-unknown}" >&2; exit 1 ;; \
+        esac; \
+    fi
 
 WORKDIR /build
 
@@ -103,10 +123,12 @@ RUN npm ci
 RUN npx nx build content-ce --configuration=production
 
 # ----- Stage 2: Serve with nginx -----
-FROM nginxinc/nginx-unprivileged:1.25-alpine
+FROM ${ACA_RUNTIME_IMAGE}
 
 USER root
-RUN apk update && apk upgrade && apk add --no-cache bash
+RUN apk update && apk upgrade && apk add --no-cache bash && \
+    mkdir -p /var/cache/nginx && \
+    chown -R 101:101 /var/cache/nginx
 USER 101
 
 # Copy nginx configuration template
@@ -122,6 +144,12 @@ USER 101
 
 # Copy built application
 COPY --from=builder /build/dist/content-ce /usr/share/nginx/html/
+
+# The entrypoint rewrites app.config.json with sed -i, which needs write
+# access to both the file and its parent directory.
+USER root
+RUN chown 101:101 /usr/share/nginx/html /usr/share/nginx/html/app.config.json
+USER 101
 
 # Default environment variables
 ENV APP_CONFIG_ECM_HOST=http://localhost:8080

@@ -219,6 +219,32 @@ The `docker` directory contains a production-ready Dockerfile that builds ACA wi
 docker build -t alfresco-content-lake-ui -f docker/Dockerfile .
 ```
 
+Build arguments. All have defaults, so a standard build needs none of them:
+
+| Argument | Purpose | Default |
+|---|---|---|
+| `ACA_TAG` | Git tag or branch of Alfresco Content App to build from | `develop` |
+| `ACA_BUILDER_IMAGE` | Base image of the build stage | `node:24-alpine` |
+| `ACA_RUNTIME_IMAGE` | Base image of the runtime stage | `nginxinc/nginx-unprivileged:1.25-alpine` |
+
+To use other base images, for example from a private mirror or hardened images:
+
+```bash
+docker build -t alfresco-content-lake-ui \
+  --build-arg ACA_BUILDER_IMAGE=registry.example.com/mirror/node:24-alpine \
+  --build-arg ACA_RUNTIME_IMAGE=registry.example.com/mirror/nginx-unprivileged:1.25-alpine \
+  -f docker/Dockerfile .
+```
+
+A replacement image must provide:
+
+- Builder: Node 24 with npm, on Alpine or Debian. git is installed if the image lacks it.
+- Runtime: nginx on Alpine (the stage installs bash with `apk`), running as uid 101, with the
+  `/docker-entrypoint.d/` and `/etc/nginx/templates/` mechanism of the official nginx images.
+
+The content-lake-app-deployment repository passes these two base-image arguments from its compose files, so
+its stack builds with the same images.
+
 The image bundles its own nginx, which proxies `/api/rag/` (including the `/api/rag/chat/stream`
 SSE endpoint) and `/api/content-lake/` to the backend services. Point those at your environment
 with the following runtime environment variables:
