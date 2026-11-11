@@ -239,6 +239,12 @@ with the following runtime environment variables:
 | `APP_CONFIG_RAG_URL` | rag-service base URL | `http://localhost:9091` |
 | `APP_CONFIG_CONTENT_LAKE_URL` | batch-ingester base URL (App for OpenArch node status) | `http://localhost:9090` |
 
+The three values are base URLs (scheme, host and port), with no path: the image adds the request path
+unchanged. It also forwards `/api/status` to the RAG URL, for the status page and the source filters.
+nginx looks the hosts up for each request, so the image starts, and ACA works, while those services are
+down; only their paths answer 502 until they are up. It denies the repository's Solr endpoints and the
+Share proxy to the repository API, as the deployment proxies do.
+
 When the image runs behind the full deployment proxy, that proxy routes `/api/content-lake` and the
 chat stream directly, so these defaults are only used when the image serves those paths on its own.
 

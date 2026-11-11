@@ -129,7 +129,11 @@ USER 101
 # Copy built application
 COPY --from=builder /build/dist/content-ce /usr/share/nginx/html/
 
-# Default environment variables
+# The official 15-local-resolvers.envsh exports NGINX_LOCAL_RESOLVERS from /etc/resolv.conf when this is
+# set; default.conf.template needs it to look the upstreams up per request.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+
+# Default environment variables: base URLs (scheme, host and port), without a path
 ENV APP_CONFIG_ECM_HOST=http://localhost:8080
 ENV APP_CONFIG_RAG_URL=http://localhost:9091
 ENV APP_CONFIG_CONTENT_LAKE_URL=http://localhost:9090

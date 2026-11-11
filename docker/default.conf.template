@@ -2,6 +2,16 @@ server {
     listen 8080;
     server_name localhost;
 
+    # The upstreams are variables, so nginx looks them up per request through the container's resolver
+    # (NGINX_LOCAL_RESOLVERS, from /etc/resolv.conf). A literal upstream is looked up once at startup,
+    # and nginx exits when the name does not exist yet, which takes ACA down while App for OpenArch is
+    # down. With variables, only the App for OpenArch paths answer 502 then. The variables hold base URLs
+    # (scheme, host and port); proxy_pass adds the request URI unchanged.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
+    set $ecm_upstream         ${APP_CONFIG_ECM_HOST};
+    set $rag_upstream         ${APP_CONFIG_RAG_URL};
+    set $content_lake_upstream ${APP_CONFIG_CONTENT_LAKE_URL};
+
     # Serve the ACA static files
     location / {
         root   /usr/share/nginx/html;
@@ -9,9 +19,18 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
+    # The same denials as the Alfresco deployment proxies: the Solr endpoints of the repository, and the
+    # Share proxy to the repository API, are not for browsers.
+    location ~ ^(/.*/service/api/solr/.*)$             { return 403; }
+    location ~ ^(/.*/s/api/solr/.*)$                   { return 403; }
+    location ~ ^(/.*/wcservice/api/solr/.*)$           { return 403; }
+    location ~ ^(/.*/wcs/api/solr/.*)$                 { return 403; }
+    location ~ ^(/.*/proxy/alfresco/api/solr/.*)$      { return 403; }
+    location ~ ^(/.*/-default-/proxy/alfresco/api/.*)$ { return 403; }
+
     # Proxy Alfresco Repository requests
     location /alfresco/ {
-        proxy_pass ${APP_CONFIG_ECM_HOST}/alfresco/;
+        proxy_pass $ecm_upstream$request_uri;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -22,7 +41,7 @@ server {
     # More specific than /api/rag/ so it wins for the chat stream. Buffering and
     # caching are disabled so tokens flush to the browser as they arrive.
     location /api/rag/chat/stream {
-        proxy_pass ${APP_CONFIG_RAG_URL}/api/rag/chat/stream;
+        proxy_pass $rag_upstream$request_uri;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -35,7 +54,18 @@ server {
 
     # Proxy RAG Service requests
     location /api/rag/ {
-        proxy_pass ${APP_CONFIG_RAG_URL}/api/rag/;
+        proxy_pass $rag_upstream$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_hide_header WWW-Authenticate;
+    }
+
+    # The status page (plugins.ragService.statusUrl) and the source filters of search and chat read
+    # rag-service's /api/status, a sibling of /api/rag.
+    location = /api/status {
+        proxy_pass $rag_upstream$request_uri;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -45,7 +75,7 @@ server {
 
     # Proxy App for OpenArch node-status requests (batch-ingester)
     location /api/content-lake/ {
-        proxy_pass ${APP_CONFIG_CONTENT_LAKE_URL}/api/content-lake/;
+        proxy_pass $content_lake_upstream$request_uri;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
